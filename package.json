@@ -1,0 +1,24 @@
+{
+  "name": "n8n-flow-library",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Convert n8n workflow JSON files into Mermaid flowcharts and publish a GitHub Pages catalog.",
+  "main": "convert.js",
+  "scripts": {
+    "convert": "node convert.js",
+    "build:library": "node scripts/build-library.js",
+    "build:png": "node scripts/build-library.js --png",
+    "build": "node scripts/build-library.js --png"
+  },
+  "keywords": [
+    "n8n",
+    "mermaid",
+    "workflow",
+    "github-pages"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@mermaid-js/mermaid-cli": "^11.6.0"
+  }
+}
+

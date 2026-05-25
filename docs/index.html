@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>n8n Flow Library</title>
+    <link rel="stylesheet" href="./assets/styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">GitHub Pages Catalog</p>
+        <h1>n8n Flow Library</h1>
+        <p class="lede">
+          Search workflows, filter by category, preview generated Mermaid PNGs, and jump to raw JSON or `.mmd`
+          outputs.
+        </p>
+      </section>
+
+      <section class="toolbar">
+        <label class="field">
+          <span>Search</span>
+          <input id="searchInput" type="search" placeholder="Search workflows, nodes, tags..." />
+        </label>
+        <label class="field">
+          <span>Category</span>
+          <select id="categoryFilter">
+            <option value="">All categories</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Sort</span>
+          <select id="sortFilter">
+            <option value="name-asc">Name A-Z</option>
+            <option value="name-desc">Name Z-A</option>
+            <option value="nodes-desc">Most nodes</option>
+            <option value="nodes-asc">Fewest nodes</option>
+            <option value="edges-desc">Most connections</option>
+            <option value="edges-asc">Fewest connections</option>
+            <option value="category-asc">Category A-Z</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="stats" id="stats"></section>
+      <section class="tag-cloud" id="tagCloud"></section>
+      <section class="grid" id="workflowGrid"></section>
+    </main>
+
+    <template id="cardTemplate">
+      <article class="card">
+        <div class="preview-wrap">
+          <img class="preview" alt="" loading="lazy" />
+        </div>
+        <div class="card-body">
+          <p class="category"></p>
+          <h2></h2>
+          <p class="summary"></p>
+          <p class="meta"></p>
+          <div class="tags"></div>
+          <div class="links">
+            <a class="diagram-link" target="_blank" rel="noreferrer">Diagram</a>
+            <a class="source-link" target="_blank" rel="noreferrer">Source JSON</a>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="./assets/app.js"></script>
+  </body>
+</html>

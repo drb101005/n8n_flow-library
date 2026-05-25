@@ -1,0 +1,58 @@
+{
+  "generatedAt": "2026-05-25T19:34:52.924Z",
+  "workflows": 290,
+  "categories": [
+    "AI Research RAG and Data Analysis",
+    "Airtable",
+    "Database and Storage",
+    "Discord",
+    "Forms and Surveys",
+    "Gmail and Email Automation",
+    "Google Drive and Google Sheets",
+    "HR and Recruitment",
+    "Instagram Twitter Social Media",
+    "Notion",
+    "OpenAI and LLMs",
+    "Other Integrations and Use Cases",
+    "PDF and Document Processing",
+    "Slack",
+    "Telegram",
+    "WhatsApp",
+    "WordPress",
+    "devops"
+  ],
+  "skipped": [
+    {
+      "file": "n8n/AI_Research_RAG_and_Data_Analysis/Host Your Own AI Deep Research Agent with n8n, Apify and OpenAI o3.json",
+      "reason": "Unexpected non-whitespace character after JSON at position 75155 (line 2942 column 2)"
+    },
+    {
+      "file": "n8n/AI_Research_RAG_and_Data_Analysis/Recipe Recommendations with Qdrant and Mistral.json",
+      "reason": "Unexpected non-whitespace character after JSON at position 22170 (line 973 column 2)"
+    },
+    {
+      "file": "n8n/AI_Research_RAG_and_Data_Analysis/🔍 Perplexity Research to HTML_ AI-Powered Content Creation.json",
+      "reason": "Unexpected non-whitespace character after JSON at position 35357 (line 1389 column 2)"
+    },
+    {
+      "file": "n8n/Notion/Automate Competitor Research with Exa.ai, Notion and AI Agents.json",
+      "reason": "Unexpected non-whitespace character after JSON at position 36422 (line 1359 column 2)"
+    },
+    {
+      "file": "n8n/OpenAI_and_LLMs/AI-Driven Lead Management and Inquiry Automation with ERPNext & n8n.json",
+      "reason": "Unexpected non-whitespace character after JSON at position 21384 (line 733 column 2)"
+    },
+    {
+      "file": "n8n/OpenAI_and_LLMs/lemlist __ GPT-3_ Supercharge your sales workflows.json",
+      "reason": "Unexpected non-whitespace character after JSON at position 6973 (line 397 column 2)"
+    },
+    {
+      "file": "n8n/Other/ALL_unique_nodes.json",
+      "reason": "Unexpected end of JSON input"
+    },
+    {
+      "file": "n8n/PDF_and_Document_Processing/Parse PDF with LlamaParse and save to Airtable.json",
+      "reason": "Unexpected non-whitespace character after JSON at position 14916 (line 601 column 2)"
+    }
+  ]
+}
