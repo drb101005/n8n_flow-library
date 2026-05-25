@@ -1,3 +1,5 @@
+const PAGE_SIZE = 12;
+
 const state = {
   items: [],
   categories: [],
@@ -5,7 +7,10 @@ const state = {
   search: "",
   category: "",
   sort: "name-asc",
-  zoom: 1
+  zoom: 1,
+  page: 1,
+  lightboxNaturalWidth: 0,
+  lightboxNaturalHeight: 0
 };
 
 const elements = {
@@ -16,10 +21,12 @@ const elements = {
   stats: document.getElementById("stats"),
   tagCloud: document.getElementById("tagCloud"),
   workflowGrid: document.getElementById("workflowGrid"),
+  pagination: document.getElementById("pagination"),
   cardTemplate: document.getElementById("cardTemplate"),
   lightbox: document.getElementById("lightbox"),
   lightboxTitle: document.getElementById("lightboxTitle"),
   lightboxImage: document.getElementById("lightboxImage"),
+  lightboxCanvas: document.getElementById("lightboxCanvas"),
   lightboxStage: document.getElementById("lightboxStage"),
   zoomInButton: document.getElementById("zoomInButton"),
   zoomOutButton: document.getElementById("zoomOutButton"),
@@ -52,6 +59,7 @@ async function bootstrap() {
 function wireEvents() {
   elements.searchInput.addEventListener("input", (event) => {
     state.search = event.target.value.trim().toLowerCase();
+    resetPagination();
     renderSuggestions();
     renderGrid();
   });
@@ -62,20 +70,22 @@ function wireEvents() {
 
   elements.categoryFilter.addEventListener("change", (event) => {
     state.category = event.target.value;
+    resetPagination();
     renderGrid();
   });
 
   elements.sortFilter.addEventListener("change", (event) => {
     state.sort = event.target.value;
+    resetPagination();
     renderGrid();
   });
 
   elements.zoomInButton.addEventListener("click", () => {
-    setZoom(state.zoom + 0.2);
+    setZoom(state.zoom + 0.25);
   });
 
   elements.zoomOutButton.addEventListener("click", () => {
-    setZoom(state.zoom - 0.2);
+    setZoom(state.zoom - 0.25);
   });
 
   elements.zoomResetButton.addEventListener("click", () => {
@@ -88,7 +98,7 @@ function wireEvents() {
   elements.lightboxStage.addEventListener(
     "wheel",
     (event) => {
-      if (elements.lightbox.hidden) {
+      if (elements.lightbox.hidden || !event.ctrlKey) {
         return;
       }
       event.preventDefault();
@@ -97,6 +107,12 @@ function wireEvents() {
     },
     { passive: false }
   );
+
+  elements.lightboxImage.addEventListener("load", () => {
+    state.lightboxNaturalWidth = elements.lightboxImage.naturalWidth || 0;
+    state.lightboxNaturalHeight = elements.lightboxImage.naturalHeight || 0;
+    syncLightboxCanvas();
+  });
 
   document.addEventListener("click", (event) => {
     if (
@@ -115,6 +131,12 @@ function wireEvents() {
     if (event.key === "Escape") {
       closeLightbox();
       hideSuggestions();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (!elements.lightbox.hidden) {
+      syncLightboxCanvas();
     }
   });
 }
@@ -166,6 +188,7 @@ function renderTagCloud() {
     button.textContent = `${tag} (${count})`;
     button.addEventListener("click", () => {
       state.activeTag = state.activeTag === tag ? "" : tag;
+      resetPagination();
       renderTagCloud();
       renderSuggestions();
       renderGrid();
@@ -196,6 +219,7 @@ function renderSuggestions() {
     button.addEventListener("click", () => {
       elements.searchInput.value = suggestion;
       state.search = suggestion.toLowerCase();
+      resetPagination();
       hideSuggestions();
       renderGrid();
     });
@@ -237,24 +261,31 @@ function hideSuggestions() {
 }
 
 function renderGrid() {
-  const filteredItems = state.items.filter(matchesFilters).sort(compareItems);
+  const filteredItems = getFilteredItems();
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
+  state.page = Math.min(state.page, totalPages);
+  const start = (state.page - 1) * PAGE_SIZE;
+  const pageItems = filteredItems.slice(start, start + PAGE_SIZE);
+
   elements.workflowGrid.innerHTML = "";
 
-  if (filteredItems.length === 0) {
+  if (pageItems.length === 0) {
     elements.workflowGrid.innerHTML = "<p>No workflows matched the current filters.</p>";
+    elements.pagination.innerHTML = "";
     return;
   }
 
   const fragment = document.createDocumentFragment();
-  for (const item of filteredItems) {
+  for (const item of pageItems) {
     const card = elements.cardTemplate.content.firstElementChild.cloneNode(true);
     const preview = card.querySelector(".preview");
+    const previewButton = card.querySelector(".preview-button");
     preview.src = item.previewPath;
     preview.alt = `${item.name} preview`;
     preview.addEventListener("error", () => {
       preview.src = buildPlaceholderPreview(item);
     });
-    preview.addEventListener("click", () => {
+    previewButton.addEventListener("click", () => {
       openLightbox(item, preview.currentSrc || preview.src);
     });
     card.querySelector(".category").textContent = item.category;
@@ -275,6 +306,62 @@ function renderGrid() {
   }
 
   elements.workflowGrid.append(fragment);
+  renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+  elements.pagination.innerHTML = "";
+  if (totalPages <= 1) {
+    return;
+  }
+
+  const controls = buildPaginationList(totalPages, state.page);
+  controls.forEach((entry) => {
+    if (entry === "...") {
+      const gap = document.createElement("span");
+      gap.className = "stat";
+      gap.textContent = "...";
+      elements.pagination.append(gap);
+      return;
+    }
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `page-button${entry === state.page ? " is-active" : ""}`;
+    button.textContent = String(entry);
+    button.addEventListener("click", () => {
+      state.page = entry;
+      renderGrid();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    elements.pagination.append(button);
+  });
+}
+
+function buildPaginationList(totalPages, currentPage) {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+  const filtered = Array.from(pages)
+    .filter((page) => page >= 1 && page <= totalPages)
+    .sort((left, right) => left - right);
+
+  const result = [];
+  for (let index = 0; index < filtered.length; index += 1) {
+    const page = filtered[index];
+    const previous = filtered[index - 1];
+    if (index > 0 && page - previous > 1) {
+      result.push("...");
+    }
+    result.push(page);
+  }
+  return result;
+}
+
+function getFilteredItems() {
+  return state.items.filter(matchesFilters).sort(compareItems);
 }
 
 function matchesFilters(item) {
@@ -345,13 +432,14 @@ function buildPlaceholderPreview(item) {
 
 function openLightbox(item, imageSource) {
   state.zoom = 1;
+  state.lightboxNaturalWidth = 0;
+  state.lightboxNaturalHeight = 0;
   elements.lightboxTitle.textContent = item.name;
   elements.lightboxImage.src = imageSource;
   elements.lightboxImage.alt = `${item.name} full preview`;
   elements.lightbox.hidden = false;
   document.body.style.overflow = "hidden";
-  setZoom(1);
-  requestAnimationFrame(centerLightboxImage);
+  centerLightboxImage();
 }
 
 function closeLightbox() {
@@ -364,13 +452,37 @@ function closeLightbox() {
 }
 
 function setZoom(nextZoom) {
-  state.zoom = Math.min(4, Math.max(0.5, Number(nextZoom.toFixed(2))));
-  elements.lightboxImage.style.transform = `scale(${state.zoom})`;
+  state.zoom = Math.min(5, Math.max(0.5, Number(nextZoom.toFixed(2))));
+  syncLightboxCanvas();
+}
+
+function syncLightboxCanvas() {
+  if (!state.lightboxNaturalWidth || !state.lightboxNaturalHeight) {
+    return;
+  }
+
+  const stageWidth = Math.max(320, elements.lightboxStage.clientWidth - 48);
+  const stageHeight = Math.max(240, elements.lightboxStage.clientHeight - 48);
+  const fitScale = Math.min(
+    stageWidth / state.lightboxNaturalWidth,
+    stageHeight / state.lightboxNaturalHeight
+  );
+  const renderedWidth = Math.max(240, Math.round(state.lightboxNaturalWidth * fitScale * state.zoom));
+  const renderedHeight = Math.max(160, Math.round(state.lightboxNaturalHeight * fitScale * state.zoom));
+
+  elements.lightboxCanvas.style.width = `${Math.max(renderedWidth, stageWidth)}px`;
+  elements.lightboxCanvas.style.height = `${Math.max(renderedHeight, stageHeight)}px`;
+  elements.lightboxImage.style.width = `${renderedWidth}px`;
+  elements.lightboxImage.style.height = `${renderedHeight}px`;
 }
 
 function centerLightboxImage() {
   elements.lightboxStage.scrollTop = 0;
   elements.lightboxStage.scrollLeft = 0;
+}
+
+function resetPagination() {
+  state.page = 1;
 }
 
 function escapeXml(value) {

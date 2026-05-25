@@ -171,6 +171,16 @@ h1 {
   min-height: 100%;
 }
 
+.preview-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: block;
+  cursor: zoom-in;
+}
+
 .preview-wrap {
   aspect-ratio: 16 / 10;
   background: linear-gradient(180deg, #fffefb 0%, #f5ead8 100%);
@@ -183,7 +193,20 @@ h1 {
   height: 100%;
   object-fit: cover;
   display: block;
-  cursor: zoom-in;
+}
+
+.preview-button:hover .preview,
+.preview-button:focus-visible .preview {
+  transform: scale(1.02);
+}
+
+.preview-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.preview {
+  transition: transform 180ms ease;
 }
 
 .card-body {
@@ -234,6 +257,37 @@ h1 {
   color: #0f5d5a;
   text-decoration: none;
   font-weight: 700;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 26px;
+}
+
+.page-button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  min-width: 44px;
+  padding: 10px 14px;
+  box-shadow: var(--shadow);
+}
+
+.page-button.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff8ef;
+}
+
+.page-button:disabled {
+  cursor: default;
+  opacity: 0.5;
 }
 
 .lightbox {
@@ -312,6 +366,8 @@ h1 {
 
 .lightbox-stage {
   overflow: auto;
+  touch-action: pan-x pan-y;
+  overscroll-behavior: contain;
   background:
     linear-gradient(45deg, rgba(216, 205, 189, 0.25) 25%, transparent 25%),
     linear-gradient(-45deg, rgba(216, 205, 189, 0.25) 25%, transparent 25%),
@@ -322,14 +378,29 @@ h1 {
   padding: 24px;
 }
 
+.lightbox-canvas {
+  position: relative;
+  min-width: 100%;
+  min-height: 100%;
+}
+
 .lightbox-stage img {
-  transform-origin: top left;
   display: block;
   max-width: none;
   width: auto;
   height: auto;
-  margin: 0 auto;
+  margin: 0;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 960px) {
+  .page {
+    width: min(100% - 24px, 1200px);
+  }
+
+  .toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 720px) {
@@ -353,5 +424,22 @@ h1 {
   .lightbox-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .lightbox-actions {
+    width: 100%;
+  }
+
+  .lightbox-button {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  .lightbox-stage {
+    padding: 14px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
   }
 }
