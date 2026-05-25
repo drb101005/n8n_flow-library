@@ -4,17 +4,27 @@ const state = {
   activeTag: "",
   search: "",
   category: "",
-  sort: "name-asc"
+  sort: "name-asc",
+  zoom: 1
 };
 
 const elements = {
   searchInput: document.getElementById("searchInput"),
+  searchSuggestions: document.getElementById("searchSuggestions"),
   categoryFilter: document.getElementById("categoryFilter"),
   sortFilter: document.getElementById("sortFilter"),
   stats: document.getElementById("stats"),
   tagCloud: document.getElementById("tagCloud"),
   workflowGrid: document.getElementById("workflowGrid"),
-  cardTemplate: document.getElementById("cardTemplate")
+  cardTemplate: document.getElementById("cardTemplate"),
+  lightbox: document.getElementById("lightbox"),
+  lightboxTitle: document.getElementById("lightboxTitle"),
+  lightboxImage: document.getElementById("lightboxImage"),
+  lightboxStage: document.getElementById("lightboxStage"),
+  zoomInButton: document.getElementById("zoomInButton"),
+  zoomOutButton: document.getElementById("zoomOutButton"),
+  zoomResetButton: document.getElementById("zoomResetButton"),
+  closeLightboxButton: document.getElementById("closeLightboxButton")
 };
 
 bootstrap().catch((error) => {
@@ -34,6 +44,7 @@ async function bootstrap() {
   populateCategories();
   renderStats(catalog);
   renderTagCloud();
+  renderSuggestions();
   renderGrid();
   wireEvents();
 }
@@ -41,7 +52,12 @@ async function bootstrap() {
 function wireEvents() {
   elements.searchInput.addEventListener("input", (event) => {
     state.search = event.target.value.trim().toLowerCase();
+    renderSuggestions();
     renderGrid();
+  });
+
+  elements.searchInput.addEventListener("focus", () => {
+    renderSuggestions();
   });
 
   elements.categoryFilter.addEventListener("change", (event) => {
@@ -52,6 +68,54 @@ function wireEvents() {
   elements.sortFilter.addEventListener("change", (event) => {
     state.sort = event.target.value;
     renderGrid();
+  });
+
+  elements.zoomInButton.addEventListener("click", () => {
+    setZoom(state.zoom + 0.2);
+  });
+
+  elements.zoomOutButton.addEventListener("click", () => {
+    setZoom(state.zoom - 0.2);
+  });
+
+  elements.zoomResetButton.addEventListener("click", () => {
+    setZoom(1);
+    centerLightboxImage();
+  });
+
+  elements.closeLightboxButton.addEventListener("click", closeLightbox);
+
+  elements.lightboxStage.addEventListener(
+    "wheel",
+    (event) => {
+      if (elements.lightbox.hidden) {
+        return;
+      }
+      event.preventDefault();
+      const delta = event.deltaY < 0 ? 0.15 : -0.15;
+      setZoom(state.zoom + delta);
+    },
+    { passive: false }
+  );
+
+  document.addEventListener("click", (event) => {
+    if (
+      event.target !== elements.searchInput &&
+      !elements.searchSuggestions.contains(event.target)
+    ) {
+      hideSuggestions();
+    }
+
+    if (event.target.dataset.closeLightbox === "true") {
+      closeLightbox();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeLightbox();
+      hideSuggestions();
+    }
   });
 }
 
@@ -103,10 +167,73 @@ function renderTagCloud() {
     button.addEventListener("click", () => {
       state.activeTag = state.activeTag === tag ? "" : tag;
       renderTagCloud();
+      renderSuggestions();
       renderGrid();
     });
     elements.tagCloud.append(button);
   }
+}
+
+function renderSuggestions() {
+  const query = state.search.trim();
+  if (!query) {
+    hideSuggestions();
+    return;
+  }
+
+  const suggestions = buildSuggestions(query).slice(0, 6);
+  if (suggestions.length === 0) {
+    hideSuggestions();
+    return;
+  }
+
+  elements.searchSuggestions.innerHTML = "";
+  suggestions.forEach((suggestion) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "suggestion";
+    button.textContent = suggestion;
+    button.addEventListener("click", () => {
+      elements.searchInput.value = suggestion;
+      state.search = suggestion.toLowerCase();
+      hideSuggestions();
+      renderGrid();
+    });
+    elements.searchSuggestions.append(button);
+  });
+  elements.searchSuggestions.hidden = false;
+}
+
+function buildSuggestions(query) {
+  const needle = query.toLowerCase();
+  const seen = new Set();
+  const suggestions = [];
+
+  for (const item of state.items) {
+    const candidates = [item.name, item.category, ...(item.tags || [])];
+    for (const candidate of candidates) {
+      if (!candidate) {
+        continue;
+      }
+      const normalized = candidate.toLowerCase();
+      if (!normalized.includes(needle) || seen.has(normalized)) {
+        continue;
+      }
+      seen.add(normalized);
+      suggestions.push(candidate);
+    }
+  }
+
+  return suggestions.sort((left, right) => {
+    const leftStarts = left.toLowerCase().startsWith(needle) ? 0 : 1;
+    const rightStarts = right.toLowerCase().startsWith(needle) ? 0 : 1;
+    return leftStarts - rightStarts || left.length - right.length || left.localeCompare(right);
+  });
+}
+
+function hideSuggestions() {
+  elements.searchSuggestions.hidden = true;
+  elements.searchSuggestions.innerHTML = "";
 }
 
 function renderGrid() {
@@ -127,10 +254,13 @@ function renderGrid() {
     preview.addEventListener("error", () => {
       preview.src = buildPlaceholderPreview(item);
     });
+    preview.addEventListener("click", () => {
+      openLightbox(item, preview.currentSrc || preview.src);
+    });
     card.querySelector(".category").textContent = item.category;
     card.querySelector("h2").textContent = item.name;
     card.querySelector(".summary").textContent = item.summary || "No summary available.";
-    card.querySelector(".meta").textContent = `${item.nodeCount} nodes • ${item.edgeCount} connections`;
+    card.querySelector(".meta").textContent = `${item.nodeCount} nodes / ${item.edgeCount} connections`;
     card.querySelector(".diagram-link").href = item.diagramPath;
     card.querySelector(".source-link").href = item.sourcePath;
 
@@ -160,12 +290,7 @@ function matchesFilters(item) {
     return true;
   }
 
-  const haystack = [
-    item.name,
-    item.category,
-    item.summary,
-    ...(item.tags || [])
-  ]
+  const haystack = [item.name, item.category, item.summary, ...(item.tags || [])]
     .join(" ")
     .toLowerCase();
 
@@ -198,7 +323,7 @@ function compareItems(left, right) {
 
 function buildPlaceholderPreview(item) {
   const title = escapeXml(item.name);
-  const subtitle = escapeXml(`${item.nodeCount} nodes • ${item.edgeCount} connections`);
+  const subtitle = escapeXml(`${item.nodeCount} nodes / ${item.edgeCount} connections`);
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600">
       <defs>
@@ -216,6 +341,36 @@ function buildPlaceholderPreview(item) {
     </svg>
   `;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
+function openLightbox(item, imageSource) {
+  state.zoom = 1;
+  elements.lightboxTitle.textContent = item.name;
+  elements.lightboxImage.src = imageSource;
+  elements.lightboxImage.alt = `${item.name} full preview`;
+  elements.lightbox.hidden = false;
+  document.body.style.overflow = "hidden";
+  setZoom(1);
+  requestAnimationFrame(centerLightboxImage);
+}
+
+function closeLightbox() {
+  if (elements.lightbox.hidden) {
+    return;
+  }
+  elements.lightbox.hidden = true;
+  elements.lightboxImage.removeAttribute("src");
+  document.body.style.overflow = "";
+}
+
+function setZoom(nextZoom) {
+  state.zoom = Math.min(4, Math.max(0.5, Number(nextZoom.toFixed(2))));
+  elements.lightboxImage.style.transform = `scale(${state.zoom})`;
+}
+
+function centerLightboxImage() {
+  elements.lightboxStage.scrollTop = 0;
+  elements.lightboxStage.scrollLeft = 0;
 }
 
 function escapeXml(value) {

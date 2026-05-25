@@ -21,6 +21,7 @@
         <label class="field">
           <span>Search</span>
           <input id="searchInput" type="search" placeholder="Search workflows, nodes, tags..." />
+          <div class="suggestions" id="searchSuggestions" hidden></div>
         </label>
         <label class="field">
           <span>Category</span>
@@ -46,6 +47,27 @@
       <section class="tag-cloud" id="tagCloud"></section>
       <section class="grid" id="workflowGrid"></section>
     </main>
+
+    <div class="lightbox" id="lightbox" hidden>
+      <div class="lightbox-backdrop" data-close-lightbox="true"></div>
+      <section class="lightbox-panel" aria-modal="true" role="dialog" aria-labelledby="lightboxTitle">
+        <header class="lightbox-header">
+          <div>
+            <p class="lightbox-kicker">Workflow Preview</p>
+            <h2 id="lightboxTitle"></h2>
+          </div>
+          <div class="lightbox-actions">
+            <button type="button" class="lightbox-button" id="zoomOutButton">-</button>
+            <button type="button" class="lightbox-button" id="zoomResetButton">Reset</button>
+            <button type="button" class="lightbox-button" id="zoomInButton">+</button>
+            <button type="button" class="lightbox-button lightbox-close" id="closeLightboxButton">Close</button>
+          </div>
+        </header>
+        <div class="lightbox-stage" id="lightboxStage">
+          <img id="lightboxImage" alt="" />
+        </div>
+      </section>
+    </div>
 
     <template id="cardTemplate">
       <article class="card">
