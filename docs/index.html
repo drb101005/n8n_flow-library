@@ -25,9 +25,18 @@
         </label>
         <label class="field">
           <span>Category</span>
-          <select id="categoryFilter" multiple>
-            <option value="">All categories</option>
-          </select>
+          <div class="custom-multiselect" id="categoryFilterContainer">
+            <div class="selected-chips" id="selectedChips"></div>
+            <div class="dropdown-trigger" id="categoryFilterTrigger">
+              <span id="categoryFilterPlaceholder">Select categories...</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="dropdown-menu" id="categoryFilterMenu" hidden>
+              <div class="option" data-value="">All categories</div>
+            </div>
+          </div>
         </label>
         <label class="field">
           <span>Sort</span>

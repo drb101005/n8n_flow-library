@@ -16,7 +16,6 @@ const state = {
 const elements = {
   searchInput: document.getElementById("searchInput"),
   searchSuggestions: document.getElementById("searchSuggestions"),
-  categoryFilter: document.getElementById("categoryFilter"),
   sortFilter: document.getElementById("sortFilter"),
   stats: document.getElementById("stats"),
   tagCloud: document.getElementById("tagCloud"),
@@ -49,6 +48,7 @@ async function bootstrap() {
   state.categories = catalog.categories;
 
   populateCategories();
+  renderCategoryFilter();
   renderStats(catalog);
   renderTagCloud();
   renderSuggestions();
@@ -68,12 +68,38 @@ function wireEvents() {
     renderSuggestions();
   });
 
-  elements.categoryFilter.addEventListener("change", (event) => {
-    state.categories_selected = Array.from(event.target.selectedOptions)
-      .map(option => option.value)
-      .filter(value => value !== "");
-    resetPagination();
-    renderGrid();
+  // Custom category filter
+  const categoryTrigger = document.getElementById("categoryFilterTrigger");
+  const categoryMenu = document.getElementById("categoryFilterMenu");
+  const categoryContainer = document.getElementById("categoryFilterContainer");
+
+  categoryTrigger.addEventListener("click", () => {
+    categoryMenu.hidden = !categoryMenu.hidden;
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!categoryContainer.contains(event.target)) {
+      categoryMenu.hidden = true;
+    }
+  });
+
+  categoryMenu.addEventListener("click", (event) => {
+    if (event.target.classList.contains("option")) {
+      const value = event.target.dataset.value;
+      if (value === "") {
+        state.categories_selected = [];
+      } else {
+        const index = state.categories_selected.indexOf(value);
+        if (index > -1) {
+          state.categories_selected.splice(index, 1);
+        } else {
+          state.categories_selected.push(value);
+        }
+      }
+      renderCategoryFilter();
+      resetPagination();
+      renderGrid();
+    }
   });
 
   elements.sortFilter.addEventListener("change", (event) => {
@@ -144,11 +170,48 @@ function wireEvents() {
 }
 
 function populateCategories() {
+  const categoryMenu = document.getElementById("categoryFilterMenu");
   for (const category of state.categories) {
-    const option = document.createElement("option");
-    option.value = category;
+    const option = document.createElement("div");
+    option.className = "option";
+    option.dataset.value = category;
     option.textContent = category;
-    elements.categoryFilter.append(option);
+    categoryMenu.append(option);
+  }
+}
+
+function renderCategoryFilter() {
+  const selectedChips = document.getElementById("selectedChips");
+  const placeholder = document.getElementById("categoryFilterPlaceholder");
+  const categoryMenu = document.getElementById("categoryFilterMenu");
+
+  selectedChips.innerHTML = "";
+  for (const category of state.categories_selected) {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.innerHTML = `
+      <span>${category}</span>
+      <button type="button" class="chip-close" data-category="${category}" aria-label="Remove ${category}">×</button>
+    `;
+    chip.querySelector(".chip-close").addEventListener("click", (e) => {
+      e.stopPropagation();
+      const idx = state.categories_selected.indexOf(category);
+      if (idx > -1) {
+        state.categories_selected.splice(idx, 1);
+      }
+      renderCategoryFilter();
+      resetPagination();
+      renderGrid();
+    });
+    selectedChips.append(chip);
+  }
+
+  placeholder.hidden = state.categories_selected.length > 0;
+
+  // Update checkmarks in dropdown
+  for (const option of categoryMenu.querySelectorAll(".option")) {
+    const isSelected = state.categories_selected.includes(option.dataset.value);
+    option.classList.toggle("is-selected", isSelected);
   }
 }
 
