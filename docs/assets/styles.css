@@ -149,6 +149,7 @@ h1 {
   align-items: center;
   cursor: pointer;
   user-select: none;
+  touch-action: manipulation;
 }
 
 .dropdown-trigger:hover {
@@ -168,6 +169,7 @@ h1 {
   overflow: hidden;
   max-height: 280px;
   overflow-y: auto;
+  touch-action: manipulation;
 }
 
 .dropdown-menu .option {
@@ -177,6 +179,7 @@ h1 {
   display: flex;
   align-items: center;
   position: relative;
+  touch-action: manipulation;
 }
 
 .dropdown-menu .option:last-child {

@@ -73,33 +73,52 @@ function wireEvents() {
   const categoryMenu = document.getElementById("categoryFilterMenu");
   const categoryContainer = document.getElementById("categoryFilterContainer");
 
-  categoryTrigger.addEventListener("click", () => {
-    categoryMenu.hidden = !categoryMenu.hidden;
+  const toggleCategoryMenu = () => {
+    const isOpen = !categoryMenu.hidden;
+    categoryMenu.hidden = isOpen;
+    categoryTrigger.setAttribute("aria-expanded", String(!isOpen));
+  };
+
+  categoryTrigger.addEventListener("click", toggleCategoryMenu);
+  categoryTrigger.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggleCategoryMenu();
+    }
   });
 
   document.addEventListener("click", (event) => {
     if (!categoryContainer.contains(event.target)) {
       categoryMenu.hidden = true;
+      categoryTrigger.setAttribute("aria-expanded", "false");
     }
   });
 
-  categoryMenu.addEventListener("click", (event) => {
-    if (event.target.classList.contains("option")) {
-      const value = event.target.dataset.value;
-      if (value === "") {
-        state.categories_selected = [];
-      } else {
-        const index = state.categories_selected.indexOf(value);
-        if (index > -1) {
-          state.categories_selected.splice(index, 1);
-        } else {
-          state.categories_selected.push(value);
-        }
-      }
-      renderCategoryFilter();
-      resetPagination();
-      renderGrid();
+  const onCategoryOptionSelect = (event) => {
+    const option = event.target.closest(".option");
+    if (!option || !categoryMenu.contains(option)) {
+      return;
     }
+
+    const value = option.dataset.value;
+    if (value === "") {
+      state.categories_selected = [];
+    } else {
+      const index = state.categories_selected.indexOf(value);
+      if (index > -1) {
+        state.categories_selected.splice(index, 1);
+      } else {
+        state.categories_selected.push(value);
+      }
+    }
+    renderCategoryFilter();
+    resetPagination();
+    renderGrid();
+  };
+
+  categoryMenu.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    onCategoryOptionSelect(event);
   });
 
   elements.sortFilter.addEventListener("change", (event) => {
