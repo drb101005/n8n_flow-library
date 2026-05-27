@@ -5,7 +5,7 @@ const state = {
   categories: [],
   activeTag: "",
   search: "",
-  category: "",
+  categories_selected: [],
   sort: "name-asc",
   zoom: 1,
   page: 1,
@@ -69,7 +69,9 @@ function wireEvents() {
   });
 
   elements.categoryFilter.addEventListener("change", (event) => {
-    state.category = event.target.value;
+    state.categories_selected = Array.from(event.target.selectedOptions)
+      .map(option => option.value)
+      .filter(value => value !== "");
     resetPagination();
     renderGrid();
   });
@@ -365,7 +367,7 @@ function getFilteredItems() {
 }
 
 function matchesFilters(item) {
-  if (state.category && item.category !== state.category) {
+  if (state.categories_selected.length > 0 && !state.categories_selected.includes(item.category)) {
     return false;
   }
 
