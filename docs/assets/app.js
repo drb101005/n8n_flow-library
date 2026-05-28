@@ -204,8 +204,8 @@ function populateCategories() {
 
     option.innerHTML = `
       <label class="option-label">
-        <input type="checkbox" class="option-checkbox" />
         <span>${category}</span>
+        <input type="checkbox" class="option-checkbox" />
       </label>
     `;
 
