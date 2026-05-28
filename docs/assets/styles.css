@@ -559,3 +559,64 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+.option {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.option:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.option-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.option.is-selected {
+  background: rgba(0, 0, 0, 0.08);
+}
+.option {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.option:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.option-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.option.is-selected {
+  background: rgba(0, 0, 0, 0.08);
+}

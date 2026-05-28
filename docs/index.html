@@ -6,40 +6,98 @@
     <title>n8n Flow Library</title>
     <link rel="stylesheet" href="./assets/styles.css" />
   </head>
+
   <body>
     <main class="page">
       <section class="hero">
         <p class="eyebrow">GitHub Pages Catalog</p>
+
         <h1>n8n Flow Library</h1>
+
         <p class="lede">
-          Search workflows, filter by category, preview generated Mermaid PNGs, and jump to raw JSON or `.mmd`
-          outputs.
+          Search workflows, filter by category, preview generated Mermaid PNGs,
+          and jump to raw JSON or `.mmd` outputs.
         </p>
       </section>
 
       <section class="toolbar">
         <label class="field">
           <span>Search</span>
-          <input id="searchInput" type="search" placeholder="Search workflows, nodes, tags..." />
-          <div class="suggestions" id="searchSuggestions" hidden></div>
+
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Search workflows, nodes, tags..."
+          />
+
+          <div
+            class="suggestions"
+            id="searchSuggestions"
+            hidden
+          ></div>
         </label>
+
         <label class="field">
           <span>Category</span>
-          <div class="custom-multiselect" id="categoryFilterContainer">
-            <div class="selected-chips" id="selectedChips"></div>
-            <div class="dropdown-trigger" id="categoryFilterTrigger" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
-              <span id="categoryFilterPlaceholder">Select categories...</span>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+          <div
+            class="custom-multiselect"
+            id="categoryFilterContainer"
+          >
+            <div
+              class="selected-chips"
+              id="selectedChips"
+            ></div>
+
+            <div
+              class="dropdown-trigger"
+              id="categoryFilterTrigger"
+              role="button"
+              tabindex="0"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+            >
+              <span id="categoryFilterPlaceholder">
+                Select categories...
+              </span>
+
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+              >
+                <path
+                  d="M4 6l4 4 4-4"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  fill="none"
+                  stroke-linecap="round"
+                />
               </svg>
             </div>
-            <div class="dropdown-menu" id="categoryFilterMenu" hidden>
-              <div class="option" data-value="">All categories</div>
+
+            <div
+              class="dropdown-menu"
+              id="categoryFilterMenu"
+              hidden
+            >
+              <div class="option" data-value="">
+                <label class="option-label">
+                  <input
+                    type="checkbox"
+                    class="option-checkbox"
+                  />
+                  <span>All categories</span>
+                </label>
+              </div>
             </div>
           </div>
         </label>
+
         <label class="field">
           <span>Sort</span>
+
           <select id="sortFilter">
             <option value="name-asc">Name A-Z</option>
             <option value="name-desc">Name Z-A</option>
@@ -53,29 +111,82 @@
       </section>
 
       <section class="stats" id="stats"></section>
+
       <section class="tag-cloud" id="tagCloud"></section>
+
       <section class="grid" id="workflowGrid"></section>
-      <section class="pagination" id="pagination"></section>
+
+      <section
+        class="pagination"
+        id="pagination"
+      ></section>
     </main>
 
     <div class="lightbox" id="lightbox" hidden>
-      <div class="lightbox-backdrop" data-close-lightbox="true"></div>
-      <section class="lightbox-panel" aria-modal="true" role="dialog" aria-labelledby="lightboxTitle">
+      <div
+        class="lightbox-backdrop"
+        data-close-lightbox="true"
+      ></div>
+
+      <section
+        class="lightbox-panel"
+        aria-modal="true"
+        role="dialog"
+        aria-labelledby="lightboxTitle"
+      >
         <header class="lightbox-header">
           <div>
             <p class="lightbox-kicker">Workflow Preview</p>
             <h2 id="lightboxTitle"></h2>
           </div>
+
           <div class="lightbox-actions">
-            <button type="button" class="lightbox-button" id="zoomOutButton">-</button>
-            <button type="button" class="lightbox-button" id="zoomResetButton">Reset</button>
-            <button type="button" class="lightbox-button" id="zoomInButton">+</button>
-            <button type="button" class="lightbox-button lightbox-close" id="closeLightboxButton">Close</button>
+            <button
+              type="button"
+              class="lightbox-button"
+              id="zoomOutButton"
+            >
+              -
+            </button>
+
+            <button
+              type="button"
+              class="lightbox-button"
+              id="zoomResetButton"
+            >
+              Reset
+            </button>
+
+            <button
+              type="button"
+              class="lightbox-button"
+              id="zoomInButton"
+            >
+              +
+            </button>
+
+            <button
+              type="button"
+              class="lightbox-button lightbox-close"
+              id="closeLightboxButton"
+            >
+              Close
+            </button>
           </div>
         </header>
-        <div class="lightbox-stage" id="lightboxStage">
-          <div class="lightbox-canvas" id="lightboxCanvas">
-            <img id="lightboxImage" alt="" />
+
+        <div
+          class="lightbox-stage"
+          id="lightboxStage"
+        >
+          <div
+            class="lightbox-canvas"
+            id="lightboxCanvas"
+          >
+            <img
+              id="lightboxImage"
+              alt=""
+            />
           </div>
         </div>
       </section>
@@ -83,20 +194,46 @@
 
     <template id="cardTemplate">
       <article class="card">
-        <button type="button" class="preview-button">
+        <button
+          type="button"
+          class="preview-button"
+        >
           <div class="preview-wrap">
-            <img class="preview" alt="" loading="lazy" />
+            <img
+              class="preview"
+              alt=""
+              loading="lazy"
+            />
           </div>
         </button>
+
         <div class="card-body">
           <p class="category"></p>
+
           <h2></h2>
+
           <p class="summary"></p>
+
           <p class="meta"></p>
+
           <div class="tags"></div>
+
           <div class="links">
-            <a class="diagram-link" target="_blank" rel="noreferrer">Diagram</a>
-            <a class="source-link" target="_blank" rel="noreferrer">Source JSON</a>
+            <a
+              class="diagram-link"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Diagram
+            </a>
+
+            <a
+              class="source-link"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Source JSON
+            </a>
           </div>
         </div>
       </article>

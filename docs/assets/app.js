@@ -116,10 +116,15 @@ function wireEvents() {
     renderGrid();
   };
 
-  categoryMenu.addEventListener("pointerdown", (event) => {
-    event.preventDefault();
+  categoryMenu.addEventListener("click", (event) => {
+    const option = event.target.closest(".option");
+    if (!option) {
+      return;
+    }
+
     onCategoryOptionSelect(event);
-  });
+    });
+
 
   elements.sortFilter.addEventListener("change", (event) => {
     state.sort = event.target.value;
@@ -190,11 +195,20 @@ function wireEvents() {
 
 function populateCategories() {
   const categoryMenu = document.getElementById("categoryFilterMenu");
+
   for (const category of state.categories) {
     const option = document.createElement("div");
+
     option.className = "option";
     option.dataset.value = category;
-    option.textContent = category;
+
+    option.innerHTML = `
+      <label class="option-label">
+        <input type="checkbox" class="option-checkbox" />
+        <span>${category}</span>
+      </label>
+    `;
+
     categoryMenu.append(option);
   }
 }
@@ -228,10 +242,17 @@ function renderCategoryFilter() {
   placeholder.hidden = state.categories_selected.length > 0;
 
   // Update checkmarks in dropdown
-  for (const option of categoryMenu.querySelectorAll(".option")) {
-    const isSelected = state.categories_selected.includes(option.dataset.value);
-    option.classList.toggle("is-selected", isSelected);
+for (const option of categoryMenu.querySelectorAll(".option")) {
+  const isSelected = state.categories_selected.includes(option.dataset.value);
+
+  option.classList.toggle("is-selected", isSelected);
+
+  const checkbox = option.querySelector(".option-checkbox");
+
+  if (checkbox) {
+    checkbox.checked = isSelected;
   }
+}
 }
 
 function renderStats(catalog) {
